@@ -126,8 +126,8 @@ class SMC:
 		# gamma1=sample.gamma
 		# rho1=sample.rho
 		# m1=sample.m
-		Px1Q1= (to be defined)
-		q1x1Q1=  (to be defined)
+		Px1Q1= (to be defined)???? # P(x1,Q1)
+		q1x1Q1=  (to be defined)??? # q1(x1,Q1)
 		R1=sample.reward_dist(s1,a1,s2,r1)
 		T1=sample.transition_dist(s1,a1,s2)
 		g1=sample.action_prob(s1,a1)
@@ -153,8 +153,11 @@ class SMC:
 				i += 1
         	else:
 				j += 1
-
-		return indexes
+		new_samples=np.zeros(N)
+		for i  in range(N):
+			new_samples[i]=sample(indexes[i])
+		return new_samples
+		#return indexes
 
 
 
@@ -170,8 +173,8 @@ class SMC:
 		# gamma1=sample.gamma
 		# rho1=sample.rho
 		# m1=sample.m
-		ht= (to be defined)
-		qt=  (to be defined)
+		ht= (to be defined) #ht(x_t|x_t-1)
+		qt=  (to be defined)#qt(xt|x1:t-1,Q1:t)
 		Rt=sample.reward_dist(st,at,st_next,rt)
 		Tt=sample.transition_dist(st,at,s_next)
 		gt=sample.action_prob(st,at)
