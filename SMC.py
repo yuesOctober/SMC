@@ -148,12 +148,13 @@ class SMC:
 		cumulative_sum = np.cumsum(weights)
 		i, j = 0, 0
 		while i < N:
-        	if positions[i] < cumulative_sum[j]:
-            	indexes[i] = j
-            	i += 1
+			if positions[i] < cumulative_sum[j]:
+				indexes[i] = j
+				i += 1
         	else:
-            	j += 1
-    	return indexes
+				j += 1
+
+		return indexes
 
 
 
