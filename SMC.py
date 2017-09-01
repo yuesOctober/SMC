@@ -66,7 +66,7 @@ class MDP:
 		s_next=self.transition(s,a)
 		r=self.reward_func(s,a,s_next)
 		delta= self.rho * r + self.gamma * np.max(self.Q[s])-self.Q[s][a]
-		Q[s][a]=self.m * Q[s][a]+ self.alpha * delta
+		self.Q[s][a]=self.m * Q[s][a]+ self.alpha * delta
 
 		#delta= r+self.gamma*np.max(self.Q[s])-self.Q[s][a]
 
@@ -135,7 +135,7 @@ class SMC:
 
 		return w1
 
-	def resample(self,weights,samples):
+	def systematic_resample(self,weights,samples):
 		'''
 		Args: 
 			weights=[weight1,....weightN]
@@ -143,6 +143,43 @@ class SMC:
 
 		'''
 		N=len(weights)
+		positions=(np.random.uniform(0,1.0/N)+ np.arange(N)) / N
+		indexes = np.zeros(N, 'i')
+		cumulative_sum = np.cumsum(weights)
+		i, j = 0, 0
+		while i < N:
+        	if positions[i] < cumulative_sum[j]:
+            	indexes[i] = j
+            	i += 1
+        	else:
+            	j += 1
+    	return indexes
+
+
+
+	def calwt(self,wt_previous,t):
+
+		st=self.S[t-1]
+		at=self.A[t-1]
+		st_next=self.S[t]
+		rt=self.R[t-1]
+		# Q1=sample.Q
+		# alpha1=sample.alpha
+		# beta1=sample.beta
+		# gamma1=sample.gamma
+		# rho1=sample.rho
+		# m1=sample.m
+		ht= (to be defined)
+		qt=  (to be defined)
+		Rt=sample.reward_dist(st,at,st_next,rt)
+		Tt=sample.transition_dist(st,at,s_next)
+		gt=sample.action_prob(st,at)
+		at=Rt*Tt*gt*ht/qt
+		wt=at*wt_previous
+
+		return wt
+
+
 
 
 
