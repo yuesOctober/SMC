@@ -143,7 +143,7 @@ class SMC:
 
 		'''
 		N=len(weights)
-		positions=(np.random.uniform(0,1.0/N)+ np.arange(N)) / N
+		positions=(random.random() + np.arange(N)) / N
 		indexes = np.zeros(N, 'i')
 		cumulative_sum = np.cumsum(weights)
 		i, j = 0, 0
