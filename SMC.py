@@ -20,6 +20,8 @@ class MDP:
 		self.gamma=gamma
 		self.rho=rho
 		self.m=m
+	def __repr__(self):
+		return '<Q:%s,alpha:%s,beta:%s,gamma:%s,rho:%s,m:%s>' %(self.Q,self.alpha,self.beta,self.gamma,self.rho,self.m)
 
 
 	@abstractmethod
@@ -54,6 +56,10 @@ class MDP:
 		Ouput:
 			Prob: probability of taking a in state s
 		'''
+		# print "s,a",s,a
+		# print self.Q
+
+
 		num=math.exp(self.beta*self.Q[s][a])
 		den=0.0
 		for i in range(len(self.Q[s])):
@@ -87,7 +93,7 @@ class MDP:
 		#s_next=self.transition(s,a)
 		r=self.reward_func(s,a,s_next)
 		delta= self.rho * r + self.gamma * np.max(self.Q[s_next])-self.Q[s][a]
-		self.Q[s][a]=self.m * Q[s][a]+ self.alpha * delta
+		self.Q[s][a]=self.m * self.Q[s][a]+ self.alpha * delta
 
 		#delta= r+self.gamma*np.max(self.Q[s])-self.Q[s][a]
 
@@ -154,6 +160,7 @@ def calMLE(S,A):
 	if tols1a1s0+tols1a1s1:
 		probs0_s1a1=tols1a1s0/(tols1a1s0+tols1a1s1)
 		probs1_s1a1=tols1a1s1/(tols1a1s0+tols1a1s1)
+	#print tols1a0s1
 	Prob=np.array([probs0_s0a0,probs1_s0a0,probs0_s0a1,probs1_s0a1,probs0_s1a0,probs1_s1a0,probs0_s1a1,probs1_s1a1])
 	return Prob
 
@@ -168,48 +175,77 @@ if s=1,a=1,Pr(r=1)=0.1
 '''
 class testMDP(MDP):
 	def reward_func(self, s ,a ,s_next):
-		prob=random.random()
-		reward=0
-		if s==0 and a==0:
-			if prob<=0.9:
-				reward=1
-		elif s==1 and a==0:
-			if prob<=0.7:
-				reward=1
-		elif s==0 and a==1:
-			if prob<=0.5:
-				reward=1
-		else:
-			if prob<=0.1:
-				reward=1
+
+		#probabilistic
+
+		# prob=random.random()
+		# reward=0
+		# if s==0 and a==0:
+		# 	if prob<=0.9:
+		# 		reward=1
+		# elif s==1 and a==0:
+		# 	if prob<=0.7:
+		# 		reward=1
+		# elif s==0 and a==1:
+		# 	if prob<=0.5:
+		# 		reward=1
+		# else:
+		# 	if prob<=0.1:
+		# 		reward=1
+		# return reward
+
+
+
+		#deterministic
+		reward=0.0
+		if a==1:
+			reward=1.0
+		return reward
+
+
+
 	def reward_dist(self, s ,a ,s_next,r):
+
+		#probabilistic
+
+		# prob=0.0
+		# if s==0 and a==0:
+		# 	if r==1:
+		# 		prob=0.9
+		# 	else:
+		# 		prob=0.1
+		# elif s==1 and a==0:
+		# 	if r==1:
+		# 		prob=0.7
+		# 	else:
+		# 		prob=0.3
+		# elif s==0 and a==1:
+		# 	if r==1:
+		# 		prob=0.5
+		# 	else:
+		# 		prob=0.5
+		# else:
+		# 	if r==1:
+		# 		prob=0.1
+		# 	else:
+		# 		prob=0.9
+
+
+		#deterministic
 		prob=0.0
-		if s==0 and a==0:
-			if r==1:
-				prob=0.9
-			else:
-				prob=0.1
-		elif s==1 and a==0:
-			if r==1:
-				prob=0.7
-			else:
-				prob=0.3
-		elif s==0 and a==1:
-			if r==1:
-				prob=0.5
-			else:
-				prob=0.5
-		else:
-			if r==1:
-				prob=0.1
-			else:
-				prob=0.9
+		if a==1 and r==1:
+			prob=1.0
+		elif a==0 and r==0:
+			prob=1.0
 		return prob
+
 
 	def transition_dist(self, s ,a ,s_next):
 		S,A=readFile("Exp_data_1.xlsx")
 		Prob=calMLE(S,A)
 		prob=0.0
+		#print "Prob is:",Prob
+		#print s,a,s_next
 		if s==0 and a==0:
 			if s_next==0:
 				prob=Prob[0]
@@ -220,7 +256,7 @@ class testMDP(MDP):
 				prob=Prob[2]
 			else:
 				prob=Prob[3]
-		elif s==1 and a==1:
+		elif s==1 and a==0:
 			if s_next==0:
 				prob=Prob[4]
 			else:
@@ -376,7 +412,10 @@ class testMDP(MDP):
 
 
 
-def genSample(mean=[[0,0,0,0],0.3,0.2,0.6,1,1],std=[[1,1,1,1],1,1,1,1,1]):
+
+
+
+def genSample(mean=[ [[0,0],[0,0]] ,0.3,0.2,0.6,1,1],std=[ [[1,1],[1,1]],0.1,0.1,0.1,0.1,0.1] ):
 
 	'''
 	Generate one sample from an initial distribution
@@ -385,20 +424,24 @@ def genSample(mean=[[0,0,0,0],0.3,0.2,0.6,1,1],std=[[1,1,1,1],1,1,1,1,1]):
 		a sample = mdp(Q,alpha,beta,gamma,rho,m)
 	'''
 	assert len(mean)==len(std)
-	Qsamples=[]
+	Q_states=len(mean[0])
+	Q_actions=len(mean[0][0])
+	Qsamples=np.zeros([Q_states,Q_actions])
 	sample=[]
-	for j in range(len(mean[0])):
-		eachmean=mean[0][j]
-		eachstd=std[0][j]
-		Qsample=np.random.normal(eachmean, eachstd, 1)
-		Qsamples.append(Qsample)
+	for i in range(len(mean[0])):
+		for j in range(len(mean[0][0])):
+			eachmean=mean[0][i][j]
+			eachstd=std[0][i][j]
+			Qsamples[i][j]=np.random.normal(eachmean, eachstd, 1)[0]
 	sample.append(Qsamples)
 	for i in range(1,len(mean)):
 		logvarmean=math.log(mean[i])
 		varstd=std[i]
 		logvarsample=np.random.normal(logvarmean, varstd ,1)
-		varsample=math.pow(math.e,logvarsample)
+
+		varsample=math.pow(math.e,logvarsample[0])
 		sample.append(varsample)
+	#print sample
 	mdpsample=testMDP(sample[0],sample[1],sample[2],sample[3],sample[4],sample[5])
 	return mdpsample
 
@@ -445,20 +488,26 @@ def systematic_resample(weights,samples):
 		samples=[sample1,...sampleN]
 
 	'''
+	#print "weights:", weights
 	N=len(weights)
+	#print "N:",N
 	positions=(random.random() + np.arange(N)) / N
+	#print "positions:",positions
 	indexes = np.zeros(N, 'i')
 	cumulative_sum = np.cumsum(weights)
+	#print "cumulative_sum:",cumulative_sum
 	i, j = 0, 0
 	while i < N:
+		#print i,j,positions[i],cumulative_sum[j]
 		if positions[i] < cumulative_sum[j]:
 			indexes[i] = j
 			i += 1
-    	else:
+		else:
 			j += 1
-	new_samples=np.zeros(N)
+	#print "here"
+	new_samples=[]
 	for i  in range(N):
-		new_samples[i]=samples[indexes[i]]
+		new_samples.append(samples[indexes[i]])
 	return new_samples
 	#return indexes
 
@@ -475,18 +524,18 @@ def samplex(sigma_x=[0.05,0.005,0.005,0.005,0.005],sample=None):
 	'''
 	samplex=[]
 
-	prev_x=[sample[1],sample[2],sample[3],sample[4],sample[5]]
+	prev_x=[sample.alpha,sample.beta,sample.gamma,sample.rho,sample.m]
 	N= len(prev_x)
 	for i in range(N):
 		logvarpre=math.log(prev_x[i])
 		varstd=sigma_x[i]
 		logsamplex=np.random.normal(logvarpre, varstd ,1)
-		samplex.append(math.pow(math.e,logsamplex))
-	sample.alpha=samplex[1]
-	sample.beta=samplex[2]
-	sample.gamma=samplex[3]
-	sample.rho=samplex[4]
-	sample.m=samplex[5]
+		samplex.append(math.pow(math.e,logsamplex[0]))
+	sample.alpha=samplex[0]
+	sample.beta=samplex[1]
+	sample.gamma=samplex[2]
+	sample.rho=samplex[3]
+	sample.m=samplex[4]
 	#return sample
 
 
@@ -497,6 +546,7 @@ def caleff(weights):
 	total=0.0
 	for weight in weights:
 		total += weight*weight
+
 	Neff=1.0/total
 	return Neff
 
@@ -504,10 +554,10 @@ def caleff(weights):
 
 def calwt(wt_previous,sample,t,S,A,R):
 
-	st=self.S[t-1]
-	at=self.A[t-1]
-	st_next=self.S[t]
-	rt=self.R[t-1]
+	st=S[t-1]
+	at=A[t-1]
+	st_next=S[t]
+	rt=R[t-1]
 	# Q1=sample.Q
 	# alpha1=sample.alpha
 	# beta1=sample.beta
@@ -521,7 +571,7 @@ def calwt(wt_previous,sample,t,S,A,R):
 	ht= 1 #ht(x_t|x_t-1)
 	qt=  1#qt(xt|x1:t-1,Q1:t)
 	Rt=sample.reward_dist(st,at,st_next,rt)
-	Tt=sample.transition_dist(st,at,s_next)
+	Tt=sample.transition_dist(st,at,st_next)
 	gt=sample.action_prob(st,at)
 	at=Rt*Tt*gt*ht/qt
 	wt=at*wt_previous
@@ -534,7 +584,7 @@ def calwt(wt_previous,sample,t,S,A,R):
 S,A=readFile("Exp_data_1.xlsx")
 R=copy.deepcopy(A)
 
-def SMC(Nsamples=10,c=1,T=10,S=None,A=None,R=None):
+def SMC(Nsamples=10,c=5,T=10,S=None,A=None,R=None):
 	'''
 	c is the threshold cN for Neff
 	Nsample is the sample numnbers 
@@ -560,15 +610,19 @@ def SMC(Nsamples=10,c=1,T=10,S=None,A=None,R=None):
 		weight=calw1(sample,S,A)
 		weights.append(weight)
 	weights=np.array(weights)
-	print weights
+	#print weights
 	weights=weights/np.sum(weights)
 
-
+	#print weights
 	#resample
 	Neff=caleff(weights)
-	#print Neff
+	#print "samples are:",samples
+	#print "Neff is:", Neff
 	if Neff < c*Nsamples:
+		#print "here"
 		resamples=systematic_resample(weights,samples)
+		#print "resamples are:",resamples
+
 
 	#time 0:
 	Qs=[]
@@ -593,8 +647,9 @@ def SMC(Nsamples=10,c=1,T=10,S=None,A=None,R=None):
 
 	#for time 1 to T.
 	for t in range(1,T):
+		print "time t:" ,t
 		#obtain updatedQ and xt
-		for i in range(Nsample):
+		for i in range(Nsamples):
 			resamples[i].updateQ(S[i],A[i],S[i+1])
 			samplex(sample=resamples[i])
 			wt_previous=1.0/Nsamples
@@ -614,7 +669,7 @@ def SMC(Nsamples=10,c=1,T=10,S=None,A=None,R=None):
 			rhos0t.append(resamples[i].rho)
 			ms0t.append(resamples[i].m)
 
-			weights[i]=calwt(wt_previous,resample[i],t,S,A,R)
+			weights[i]=calwt(wt_previous,resamples[i],t,S,A,R)
 		#normalize	
 		weights=np.array(weights)
 		weights=weights/np.sum(weights)

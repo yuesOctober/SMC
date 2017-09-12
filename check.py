@@ -83,5 +83,64 @@ def readFile(filename):
 	return S,A
 
 # S,A=readFile("Exp_data_1.xlsx")
+# print S
+# print A
+# def calMLE(S,A):
+# 	tols0a0s0=0.0
+# 	tols0a0s1=0.0
+# 	tols0a1s0=0.0
+# 	tols0a1s1=0.0
+# 	tols1a0s0=0.0
+# 	tols1a0s1=0.0
+# 	tols1a1s0=0.0
+# 	tols1a1s1=0.0
+# 	probs0_s0a0=0.0
+# 	probs1_s0a0=0.0
+# 	probs0_s0a1=0.0
+# 	probs1_s0a1=0.0
+# 	probs0_s1a0=0.0
+# 	probs1_s1a0=0.0
+# 	probs0_s1a1=0.0
+# 	probs1_s1a1=0.0
+# 	total=len(S)
+# 	for i in range(len(S)-1):
+# 		if S[i]==0 and A[i]==0 and S[i+1]==0:
+# 			#print i
+# 			tols0a0s0 += 1
+# 		elif S[i]==0 and A[i]==0 and S[i+1]==1:
+# 			tols0a0s1 += 1
+# 		elif S[i]==0 and A[i]==1 and S[i+1]==0:
+# 			tols0a1s0 += 1
+# 		elif S[i]==0 and A[i]==1 and S[i+1]==1:
+# 			tols0a1s1 += 1
+# 		elif S[i]==1 and A[i]==0 and S[i+1]==0:
+# 			tols1a0s0 += 1
+# 		elif S[i]==1 and A[i]==0 and S[i+1]==1:
+# 			#print i
+# 			tols1a0s1 += 1
+# 		elif S[i]==1 and A[i]==1 and S[i+1]==0:
+# 			tols1a1s0 += 1
+# 		elif S[i]==1 and A[i]==1 and S[i+1]==1:
+			
+# 			tols1a1s1 += 1
+# 	if tols0a0s0+tols0a0s1:
+# 		probs0_s0a0=tols0a0s0/(tols0a0s0+tols0a0s1)
+# 		probs1_s0a0=tols0a0s1/(tols0a0s0+tols0a0s1)
+# 	if tols0a1s0+tols0a1s1:
+# 		probs0_s0a1=tols0a0s0/(tols0a1s0+tols0a1s1)
+# 		probs1_s0a1=tols0a0s1/(tols0a1s0+tols0a1s1)
+# 	if tols1a0s0+tols1a0s1:
+# 		probs0_s1a0=tols1a0s0/(tols1a0s0+tols1a0s1)
+# 		probs1_s1a0=tols1a0s1/(tols1a0s0+tols1a0s1)
+# 	if tols1a1s0+tols1a1s1:
+# 		probs0_s1a1=tols1a1s0/(tols1a1s0+tols1a1s1)
+# 		probs1_s1a1=tols1a1s1/(tols1a1s0+tols1a1s1)
+# 	Prob=np.array([probs0_s0a0,probs1_s0a0,probs0_s0a1,probs1_s0a1,probs0_s1a0,probs1_s1a0,probs0_s1a1,probs1_s1a1])
+# 	total=np.array([tols0a0s0,tols0a0s1,tols0a1s0,tols0a1s1,tols1a0s0,tols1a0s1,tols1a1s0,tols1a1s1])
+# 	return total
+# total=calMLE(S,A)
+# print len(S)
+# print total
 
-# print S,A
+
+
