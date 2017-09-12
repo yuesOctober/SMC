@@ -10,6 +10,7 @@ import xlrd
 import re
 import copy
 from check import readFile
+import matplotlib.pyplot as plt
 class MDP:
 	def __init__(self,Q,alpha,beta,gamma,rho,m):
 		#self.Q=np.zeros((S,A))
@@ -81,9 +82,9 @@ class MDP:
 			if rand_prob < prob_thresholds[i]:
 				return i
 
-	def updateQ(self,s):
-		a=self.selectAct(s)
-		s_next=self.transition(s,a)
+	def updateQ(self,s,a,s_next):
+		#a=self.selectAct(s)
+		#s_next=self.transition(s,a)
 		r=self.reward_func(s,a,s_next)
 		delta= self.rho * r + self.gamma * np.max(self.Q[s_next])-self.Q[s][a]
 		self.Q[s][a]=self.m * Q[s][a]+ self.alpha * delta
@@ -115,33 +116,45 @@ def calMLE(S,A):
 	tols1a0s1=0.0
 	tols1a1s0=0.0
 	tols1a1s1=0.0
+	probs0_s0a0=0.0
+	probs1_s0a0=0.0
+	probs0_s0a1=0.0
+	probs1_s0a1=0.0
+	probs0_s1a0=0.0
+	probs1_s1a0=0.0
+	probs0_s1a1=0.0
+	probs1_s1a1=0.0
 	total=len(S)
 	for i in range(len(S)-1):
-		if S[i]==0 and a[i]==0 and S[i+1]==0:
+		if S[i]==0 and A[i]==0 and S[i+1]==0:
 			tols0a0s0 += 1
-		elif S[i]==0 and a[i]==0 and S[i+1]==1:
+		elif S[i]==0 and A[i]==0 and S[i+1]==1:
 			tols0a0s1 += 1
-		elif S[i]==0 and a[i]==1 and S[i+1]==0:
+		elif S[i]==0 and A[i]==1 and S[i+1]==0:
 			tols0a1s0 += 1
-		elif S[i]==0 and a[i]==1 and S[i+1]==1:
+		elif S[i]==0 and A[i]==1 and S[i+1]==1:
 			tols0a1s1 += 1
-		elif S[i]==1 and a[i]==0 and S[i+1]==0:
+		elif S[i]==1 and A[i]==0 and S[i+1]==0:
 			tols1a0s0 += 1
-		elif S[i]==1 and a[i]==0 and S[i+1]==1:
+		elif S[i]==1 and A[i]==0 and S[i+1]==1:
 			tols1a0s1 += 1
-		elif S[i]==1 and a[i]==1 and S[i+1]==0:
+		elif S[i]==1 and A[i]==1 and S[i+1]==0:
 			tols1a1s0 += 1
 		else:
 			tols1a1s1 += 1
-	probs0_s0a0=tols0a0s0/(tols0a0s0+tols0a0s1)
-	probs1_s0a0=tols0a0s1/(tols0a0s0+tols0a0s1)
-	probs0_s0a1=tols0a0s0/(tols0a1s0+tols0a1s1)
-	probs1_s0a1=tols0a0s1/(tols0a1s0+tols0a1s1)
-	probs0_s1a0=tols1a0s0/(tols1a0s0+tols1a0s1)
-	probs1_s1a0=tols1a0s1/(tols1a0s0+tols1a0s1)
-	probs0_s1a1=tols1a1s0/(tols1a1s0+tols1a1s1)
-	probs1_s1a1=tols1a1s1/(tols1a1s0+tols1a1s1)
-	Prob=np.arrary([probs0_s0a0,probs1_s0a0,probs0_s0a1,probs1_s0a1,probs0_s1a0,probs1_s1a0,probs0_s1a1,probs1_s1a1])
+	if tols0a0s0+tols0a0s1:
+		probs0_s0a0=tols0a0s0/(tols0a0s0+tols0a0s1)
+		probs1_s0a0=tols0a0s1/(tols0a0s0+tols0a0s1)
+	if tols0a1s0+tols0a1s1:
+		probs0_s0a1=tols0a0s0/(tols0a1s0+tols0a1s1)
+		probs1_s0a1=tols0a0s1/(tols0a1s0+tols0a1s1)
+	if tols1a0s0+tols1a0s1:
+		probs0_s1a0=tols1a0s0/(tols1a0s0+tols1a0s1)
+		probs1_s1a0=tols1a0s1/(tols1a0s0+tols1a0s1)
+	if tols1a1s0+tols1a1s1:
+		probs0_s1a1=tols1a1s0/(tols1a1s0+tols1a1s1)
+		probs1_s1a1=tols1a1s1/(tols1a1s0+tols1a1s1)
+	Prob=np.array([probs0_s0a0,probs1_s0a0,probs0_s0a1,probs1_s0a1,probs0_s1a0,probs1_s1a0,probs0_s1a1,probs1_s1a1])
 	return Prob
 
 
@@ -249,124 +262,396 @@ class testMDP(MDP):
 
 
 
-class SMC:
+# class SMC:
 
-	def __init__(self,S,R,A):
-		'''
-		S is s_1 to s_t+1
-		R is r_1 to s_t
-		A is a_1 to a_t
-		'''
-		self.S=S
-		self.R=R
-		self.A=A 
-
-
-	@abstractmethod
-	def genSample(self,distribution="Guassian"):
-
-		'''
-		Generate one sample from an initial distribution
-		Output: 
-
-			a sample = mdp(Q,alpha,beta,gamma,rho,m)
-		'''
-		pass
+# 	def __init__(self,S,R,A):
+# 		'''
+# 		S is s_1 to s_t+1
+# 		R is r_1 to s_t
+# 		A is a_1 to a_t
+# 		'''
+# 		self.S=S
+# 		self.R=R
+# 		self.A=A 
 
 
-	def calw1(self,sample):
-		'''
-		Calculate w1 for a single sample
-		Args:
-			sample: MDP class.
-		Output:
-			w1 for this sample
+# 	@abstractmethod
+# 	def genSample(self,mean,variance):
 
-		'''
-		s1=self.S[0]
-		a1=self.A[0]
-		s2=self.S[1]
-		r1=self.R[0]
-		# Q1=sample.Q
-		# alpha1=sample.alpha
-		# beta1=sample.beta
-		# gamma1=sample.gamma
-		# rho1=sample.rho
-		# m1=sample.m
-		Px1Q1= (to be defined)???? # P(x1,Q1)
-		q1x1Q1=  (to be defined)??? # q1(x1,Q1)
-		R1=sample.reward_dist(s1,a1,s2,r1)
-		T1=sample.transition_dist(s1,a1,s2)
-		g1=sample.action_prob(s1,a1)
-		w1=R1*T1*g1*Px1Q1/q1x1Q1
+# 		'''
+# 		Generate one sample from an initial distribution
+# 		Output: 
 
-		return w1
-
-	def systematic_resample(self,weights,samples):
-		'''
-		Args: 
-			weights=[weight1,....weightN]
-			samples=[sample1,...sampleN]
-
-		'''
-		N=len(weights)
-		positions=(random.random() + np.arange(N)) / N
-		indexes = np.zeros(N, 'i')
-		cumulative_sum = np.cumsum(weights)
-		i, j = 0, 0
-		while i < N:
-			if positions[i] < cumulative_sum[j]:
-				indexes[i] = j
-				i += 1
-        	else:
-				j += 1
-		new_samples=np.zeros(N)
-		for i  in range(N):
-			new_samples[i]=samples[indexes[i]]
-		return new_samples
-		#return indexes
+# 			a sample = mdp(Q,alpha,beta,gamma,rho,m)
+# 		'''
+# 		pass
 
 
+# 	def calw1(self,sample):
+# 		'''
+# 		Calculate w1 for a single sample
+# 		Args:
+# 			sample: MDP class.
+# 		Output:
+# 			w1 for this sample
 
-	def caleff(self,weights):
-		N=len(weights):
-		total=0.0
-		for weight in weights:
-			total += weight*weight
-		Neff=1.0/total
-		return Neff
+# 		'''
+# 		s1=self.S[0]
+# 		a1=self.A[0]
+# 		s2=self.S[1]
+# 		r1=self.R[0]
+# 		# Q1=sample.Q
+# 		# alpha1=sample.alpha
+# 		# beta1=sample.beta
+# 		# gamma1=sample.gamma
+# 		# rho1=sample.rho
+# 		# m1=sample.m
+# 		Px1Q1= (to be defined)???? # P(x1,Q1)
+# 		q1x1Q1=  (to be defined)??? # q1(x1,Q1)
+# 		R1=sample.reward_dist(s1,a1,s2,r1)
+# 		T1=sample.transition_dist(s1,a1,s2)
+# 		g1=sample.action_prob(s1,a1)
+# 		w1=R1*T1*g1*Px1Q1/q1x1Q1
+
+# 		return w1
+
+# 	def systematic_resample(self,weights,samples):
+# 		'''
+# 		Args: 
+# 			weights=[weight1,....weightN]
+# 			samples=[sample1,...sampleN]
+
+# 		'''
+# 		N=len(weights)
+# 		positions=(random.random() + np.arange(N)) / N
+# 		indexes = np.zeros(N, 'i')
+# 		cumulative_sum = np.cumsum(weights)
+# 		i, j = 0, 0
+# 		while i < N:
+# 			if positions[i] < cumulative_sum[j]:
+# 				indexes[i] = j
+# 				i += 1
+#         	else:
+# 				j += 1
+# 		new_samples=np.zeros(N)
+# 		for i  in range(N):
+# 			new_samples[i]=samples[indexes[i]]
+# 		return new_samples
+# 		#return indexes
 
 
 
-	def calwt(self,wt_previous,t):
-
-		st=self.S[t-1]
-		at=self.A[t-1]
-		st_next=self.S[t]
-		rt=self.R[t-1]
-		# Q1=sample.Q
-		# alpha1=sample.alpha
-		# beta1=sample.beta
-		# gamma1=sample.gamma
-		# rho1=sample.rho
-		# m1=sample.m
-		ht= (to be defined) #ht(x_t|x_t-1)
-		qt=  (to be defined)#qt(xt|x1:t-1,Q1:t)
-		Rt=sample.reward_dist(st,at,st_next,rt)
-		Tt=sample.transition_dist(st,at,s_next)
-		gt=sample.action_prob(st,at)
-		at=Rt*Tt*gt*ht/qt
-		wt=at*wt_previous
-
-		return wt
+# 	def caleff(self,weights):
+# 		N=len(weights):
+# 		total=0.0
+# 		for weight in weights:
+# 			total += weight*weight
+# 		Neff=1.0/total
+# 		return Neff
 
 
+
+# 	def calwt(self,wt_previous,t):
+
+# 		st=self.S[t-1]
+# 		at=self.A[t-1]
+# 		st_next=self.S[t]
+# 		rt=self.R[t-1]
+# 		# Q1=sample.Q
+# 		# alpha1=sample.alpha
+# 		# beta1=sample.beta
+# 		# gamma1=sample.gamma
+# 		# rho1=sample.rho
+# 		# m1=sample.m
+# 		ht= (to be defined) #ht(x_t|x_t-1)
+# 		qt=  (to be defined)#qt(xt|x1:t-1,Q1:t)
+# 		Rt=sample.reward_dist(st,at,st_next,rt)
+# 		Tt=sample.transition_dist(st,at,s_next)
+# 		gt=sample.action_prob(st,at)
+# 		at=Rt*Tt*gt*ht/qt
+# 		wt=at*wt_previous
+
+# 		return wt
 
 
 
 
+def genSample(mean=[[0,0,0,0],0.3,0.2,0.6,1,1],std=[[1,1,1,1],1,1,1,1,1]):
+
+	'''
+	Generate one sample from an initial distribution
+	Output: 
+
+		a sample = mdp(Q,alpha,beta,gamma,rho,m)
+	'''
+	assert len(mean)==len(std)
+	Qsamples=[]
+	sample=[]
+	for j in range(len(mean[0])):
+		eachmean=mean[0][j]
+		eachstd=std[0][j]
+		Qsample=np.random.normal(eachmean, eachstd, 1)
+		Qsamples.append(Qsample)
+	sample.append(Qsamples)
+	for i in range(1,len(mean)):
+		logvarmean=math.log(mean[i])
+		varstd=std[i]
+		logvarsample=np.random.normal(logvarmean, varstd ,1)
+		varsample=math.pow(math.e,logvarsample)
+		sample.append(varsample)
+	mdpsample=testMDP(sample[0],sample[1],sample[2],sample[3],sample[4],sample[5])
+	return mdpsample
+
+	#pass
+
+def calw1(sample,S,A):
+	'''
+	Calculate w1 for a single sample
+	Args:
+		sample: MDP class.
+	Output:
+		w1 for this sample
+
+	'''
+	s1=S[0]
+	a1=A[0]
+	s2=S[1]
+	r1=R[0]
+	# Q1=sample.Q
+	# alpha1=sample.alpha
+	# beta1=sample.beta
+	# gamma1=sample.gamma
+	# rho1=sample.rho
+	# m1=sample.m
+
+	# Px1Q1= (to be defined)???? # P(x1,Q1)
+	# q1x1Q1=  (to be defined)??? # q1(x1,Q1)
+	Px1Q1= 1 # P(x1,Q1)
+	q1x1Q1=  1 # q1(x1,Q1)
+	R1=sample.reward_dist(s1,a1,s2,r1)
+	#print "R1 is", R1
+	T1=sample.transition_dist(s1,a1,s2)
+	#print "T1 is", T1
+	g1=sample.action_prob(s1,a1)
+	#print "g1 is", g1
+	w1=R1*T1*g1*Px1Q1/q1x1Q1
+	#print "w1 is", w1
+	return w1
+
+def systematic_resample(weights,samples):
+	'''
+	Args: 
+		weights=[weight1,....weightN]
+		samples=[sample1,...sampleN]
+
+	'''
+	N=len(weights)
+	positions=(random.random() + np.arange(N)) / N
+	indexes = np.zeros(N, 'i')
+	cumulative_sum = np.cumsum(weights)
+	i, j = 0, 0
+	while i < N:
+		if positions[i] < cumulative_sum[j]:
+			indexes[i] = j
+			i += 1
+    	else:
+			j += 1
+	new_samples=np.zeros(N)
+	for i  in range(N):
+		new_samples[i]=samples[indexes[i]]
+	return new_samples
+	#return indexes
 
 
+#simplified
+def samplex(sigma_x=[0.05,0.005,0.005,0.005,0.005],sample=None):
+	'''
+		self.Q=Q
+		self.alpha=alpha
+		self.beta=beta
+		self.gamma=gamma
+		self.rho=rho
+		self.m=m
+	'''
+	samplex=[]
+
+	prev_x=[sample[1],sample[2],sample[3],sample[4],sample[5]]
+	N= len(prev_x)
+	for i in range(N):
+		logvarpre=math.log(prev_x[i])
+		varstd=sigma_x[i]
+		logsamplex=np.random.normal(logvarpre, varstd ,1)
+		samplex.append(math.pow(math.e,logsamplex))
+	sample.alpha=samplex[1]
+	sample.beta=samplex[2]
+	sample.gamma=samplex[3]
+	sample.rho=samplex[4]
+	sample.m=samplex[5]
+	#return sample
+
+
+
+
+def caleff(weights):
+	N=len(weights)
+	total=0.0
+	for weight in weights:
+		total += weight*weight
+	Neff=1.0/total
+	return Neff
+
+
+
+def calwt(wt_previous,sample,t,S,A,R):
+
+	st=self.S[t-1]
+	at=self.A[t-1]
+	st_next=self.S[t]
+	rt=self.R[t-1]
+	# Q1=sample.Q
+	# alpha1=sample.alpha
+	# beta1=sample.beta
+	# gamma1=sample.gamma
+	# rho1=sample.rho
+	# m1=sample.m
+
+
+	# ht= (to be defined) #ht(x_t|x_t-1)
+	# qt=  (to be defined)#qt(xt|x1:t-1,Q1:t)
+	ht= 1 #ht(x_t|x_t-1)
+	qt=  1#qt(xt|x1:t-1,Q1:t)
+	Rt=sample.reward_dist(st,at,st_next,rt)
+	Tt=sample.transition_dist(st,at,s_next)
+	gt=sample.action_prob(st,at)
+	at=Rt*Tt*gt*ht/qt
+	wt=at*wt_previous
+
+	return wt
+
+
+
+
+S,A=readFile("Exp_data_1.xlsx")
+R=copy.deepcopy(A)
+
+def SMC(Nsamples=10,c=1,T=10,S=None,A=None,R=None):
+	'''
+	c is the threshold cN for Neff
+	Nsample is the sample numnbers 
+	'''
+
+	#initialization
+	samples=[]
+	weights=[]
+
+
+
+	Qs0T=[]
+	alphas0T=[]
+	betas0T=[]
+	gammas0T=[]
+	rhos0T=[]
+	ms0T=[]
+
+
+	for i in range(Nsamples):
+		sample=genSample()
+		samples.append(sample)
+		weight=calw1(sample,S,A)
+		weights.append(weight)
+	weights=np.array(weights)
+	print weights
+	weights=weights/np.sum(weights)
+
+
+	#resample
+	Neff=caleff(weights)
+	#print Neff
+	if Neff < c*Nsamples:
+		resamples=systematic_resample(weights,samples)
+
+	#time 0:
+	Qs=[]
+	alphas=[]
+	betas=[]
+	gammas=[]
+	rhos=[]
+	ms=[]
+	for i in range(Nsamples):
+		Qs.append(resamples[i].Q)
+		alphas.append(resamples[i].alpha)
+		betas.append(resamples[i].beta)
+		gammas.append(resamples[i].gamma)
+		rhos.append(resamples[i].rho)
+		ms.append(resamples[i].m)
+	Qs0T.append(Qs)
+	alphas0T.append(alphas)
+	betas0T.append(betas)
+	gammas0T.append(gammas)
+	rhos0T.append(rhos)
+	ms0T.append(ms)
+
+	#for time 1 to T.
+	for t in range(1,T):
+		#obtain updatedQ and xt
+		for i in range(Nsample):
+			resamples[i].updateQ(S[i],A[i],S[i+1])
+			samplex(sample=resamples[i])
+			wt_previous=1.0/Nsamples
+
+			# for future use
+			Qs0t=[row[i] for row in Qs0T]
+			alphas0t=[row[i] for row in alphas0T]
+			betas0t=[row[i] for row in betas0T]
+			gammas0t=[row[i] for row in gammas0T]
+			rhos0t=[row[i] for row in rhos0T]
+			ms0t=[row[i] for row in ms0T]
+
+			Qs0t.append(resamples[i].Q)
+			alphas0t.append(resamples[i].alpha)
+			betas0t.append(resamples[i].beta)
+			gammas0t.append(resamples[i].gamma)
+			rhos0t.append(resamples[i].rho)
+			ms0t.append(resamples[i].m)
+
+			weights[i]=calwt(wt_previous,resample[i],t,S,A,R)
+		#normalize	
+		weights=np.array(weights)
+		weights=weights/np.sum(weights)
+
+		#resample
+		Neff=caleff(weights)
+		if Neff < c*Nsamples:
+			resamples=systematic_resample(weights,samples)
+		Qs=[]
+		alphas=[]
+		betas=[]
+		gammas=[]
+		rhos=[]
+		ms=[]
+		for i in range(Nsamples):
+			Qs.append(resamples[i].Q)
+			alphas.append(resamples[i].alpha)
+			betas.append(resamples[i].beta)
+			gammas.append(resamples[i].gamma)
+			rhos.append(resamples[i].rho)
+			ms.append(resamples[i].m)
+		Qs0T.append(Qs)
+		alphas0T.append(alphas)
+		betas0T.append(betas)
+		gammas0T.append(gammas)
+		rhos0T.append(rhos)
+		ms0T.append(ms)
+
+	# alphas=np.array(alphas)
+	# betas=np.array(betas)
+	# gammas=np.array(gammas)
+	# rhos=np.array(rhos)
+	# ms=np.array(ms)
+	#plt.plot(alphas)
+	#plt.show()
+
+SMC(S=S,A=A,R=R)
 
 
 
