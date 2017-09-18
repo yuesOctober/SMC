@@ -64,7 +64,7 @@ def readFile(filename):
 
 	#print A
 	An=np.array(An)
-	q=re.compile('^tlfb_m\w\w_d\w\w_3$')
+	q=re.compile('^tlfb_m\w\w_d\w\w_3a$')
 	indexes=[]
 	cols0=sheet1.row_values(0)
 	for i in range(len(cols0)):
@@ -319,8 +319,8 @@ def calMLEn(S,A):
 	actions=np.array([i for i in range(nAction) ])
 	total=np.zeros([nState,nAction,nState])
 	probability=np.zeros([nState,nAction,nState])
-	print states
-	print actions
+	#print states
+	#print actions
 	for i in range(len(S)):
 		for j in range(len(S[0])-1):
 			for s in states:
@@ -339,8 +339,8 @@ def calMLEn(S,A):
 			for k in range(nState):
 				if totalij:
 					probability[i][j][k]=total[i][j][k]/totalij
-	print total
-	print probability
+	#print total
+	#print probability
 
 	return probability
 #S,A=readFile("Exp_data_20170913.xlsx")
